@@ -15,7 +15,15 @@ sys.path.insert(0, str(ROOT / "backend"))
 
 # Settings are cached at import time, so the environment must be set up first.
 os.environ.setdefault("ENVIRONMENT", "development")
-os.environ["DATABASE_URL"] = f"sqlite:///{(ROOT / 'tests' / '.pytest.sqlite3').as_posix()}"
+
+# SQLite by default so the suite needs no services. Point TEST_DATABASE_URL at a
+# throwaway PostgreSQL database to run the same tests on the production engine:
+#   TEST_DATABASE_URL=postgresql+psycopg://user:pass@localhost:5432/myspace_test pytest
+SQLITE_FILE = ROOT / "tests" / ".pytest.sqlite3"
+os.environ["DATABASE_URL"] = os.getenv(
+    "TEST_DATABASE_URL", f"sqlite:///{SQLITE_FILE.as_posix()}"
+)
+USING_SQLITE = os.environ["DATABASE_URL"].startswith("sqlite")
 os.environ["JWT_SECRET"] = "test-secret-key-used-only-by-the-test-suite"
 os.environ["TOKEN_ENCRYPTION_KEY"] = "dGVzdC1mZXJuZXQta2V5LWZvci10aGUtdGVzdC1zdWl0ZQ=="
 os.environ["COOKIE_SECURE"] = "false"
@@ -43,18 +51,22 @@ OWNER_PASSWORD = "correct-horse-battery-staple"
 
 @pytest.fixture(scope="session", autouse=True)
 def _database():
-    db_file = ROOT / "tests" / ".pytest.sqlite3"
-    db_file.unlink(missing_ok=True)
+    """Build the schema from the migrations, so they are tested too."""
+    if USING_SQLITE:
+        SQLITE_FILE.unlink(missing_ok=True)
 
     alembic_cfg = Config(str(ROOT / "alembic.ini"))
     alembic_cfg.set_main_option("script_location", str(ROOT / "migrations"))
     alembic_cfg.set_main_option("sqlalchemy.url", os.environ["DATABASE_URL"])
+    if not USING_SQLITE:
+        command.downgrade(alembic_cfg, "base")
     command.upgrade(alembic_cfg, "head")
 
     yield
 
     engine.dispose()
-    db_file.unlink(missing_ok=True)
+    if USING_SQLITE:
+        SQLITE_FILE.unlink(missing_ok=True)
 
 
 @pytest.fixture(autouse=True)
