@@ -1,0 +1,168 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+/*
+ * Design tokens.
+ * Light is a warm paper white; dark is a cool near-black. A single iris accent
+ * carries interaction, with soft semantic tints for status.
+ */
+@layer base {
+  :root {
+    --background: 40 30% 99%;
+    --foreground: 240 12% 13%;
+
+    --surface: 0 0% 100%;
+    --surface-raised: 0 0% 100%;
+    --surface-sunken: 40 16% 96.5%;
+
+    --muted: 40 16% 95.5%;
+    --muted-foreground: 240 5% 45%;
+
+    --accent: 252 40% 96%;
+    --accent-foreground: 256 60% 40%;
+
+    --primary: 256 70% 56%;
+    --primary-foreground: 0 0% 100%;
+    --primary-soft: 254 76% 96%;
+
+    --danger: 350 74% 50%;
+    --danger-foreground: 0 0% 100%;
+    --danger-soft: 350 90% 97%;
+
+    --success: 157 64% 34%;
+    --success-soft: 152 66% 95%;
+
+    --warning: 32 90% 44%;
+    --warning-soft: 40 92% 95%;
+
+    --info: 205 84% 42%;
+    --info-soft: 204 90% 96%;
+
+    --border: 40 12% 89%;
+    --input: 40 12% 87%;
+    --ring: 256 70% 56%;
+
+    --shadow-color: 240 30% 20%;
+    --radius: 0.75rem;
+  }
+
+  .dark {
+    --background: 240 13% 7%;
+    --foreground: 240 12% 94%;
+
+    --surface: 240 12% 10%;
+    --surface-raised: 240 11% 13%;
+    --surface-sunken: 240 14% 8%;
+
+    --muted: 240 9% 16%;
+    --muted-foreground: 240 6% 62%;
+
+    --accent: 252 20% 19%;
+    --accent-foreground: 254 90% 86%;
+
+    --primary: 256 84% 70%;
+    --primary-foreground: 250 40% 10%;
+    --primary-soft: 254 30% 20%;
+
+    --danger: 350 80% 62%;
+    --danger-foreground: 350 40% 10%;
+    --danger-soft: 350 40% 18%;
+
+    --success: 155 60% 50%;
+    --success-soft: 155 35% 16%;
+
+    --warning: 38 92% 58%;
+    --warning-soft: 38 45% 17%;
+
+    --info: 205 85% 62%;
+    --info-soft: 205 45% 17%;
+
+    --border: 240 8% 19%;
+    --input: 240 8% 22%;
+    --ring: 256 84% 70%;
+
+    --shadow-color: 240 60% 2%;
+  }
+
+  * {
+    @apply border-border;
+  }
+
+  html {
+    -webkit-text-size-adjust: 100%;
+  }
+
+  body {
+    @apply bg-background text-foreground antialiased;
+    font-feature-settings: "cv02", "cv03", "cv04", "cv11";
+    text-rendering: optimizeLegibility;
+  }
+
+  /* Only show focus rings for keyboard users. */
+  :focus-visible {
+    @apply outline-none ring-2 ring-ring ring-offset-2 ring-offset-background;
+  }
+
+  ::selection {
+    @apply bg-primary/20;
+  }
+}
+
+@layer components {
+  .card-surface {
+    @apply rounded-lg border border-border bg-surface shadow-card;
+  }
+
+  .skeleton {
+    @apply relative overflow-hidden rounded-md bg-muted;
+  }
+
+  .skeleton::after {
+    content: "";
+    @apply absolute inset-0 -translate-x-full animate-shimmer;
+    background-image: linear-gradient(
+      90deg,
+      transparent,
+      hsl(var(--foreground) / 0.05),
+      transparent
+    );
+  }
+
+  .kbd {
+    @apply inline-flex h-5 min-w-[1.25rem] items-center justify-center rounded border border-border
+      bg-muted px-1.5 font-mono text-2xs font-medium text-muted-foreground;
+  }
+
+  /* Hides scrollbars on horizontal filter rails without losing scrollability. */
+  .no-scrollbar {
+    scrollbar-width: none;
+    -ms-overflow-style: none;
+  }
+
+  .no-scrollbar::-webkit-scrollbar {
+    display: none;
+  }
+
+  .safe-bottom {
+    padding-bottom: env(safe-area-inset-bottom);
+  }
+}
+
+@layer utilities {
+  .text-balance {
+    text-wrap: balance;
+  }
+}
+
+/* Respect users who ask for less motion. */
+@media (prefers-reduced-motion: reduce) {
+  *,
+  *::before,
+  *::after {
+    animation-duration: 0.01ms !important;
+    animation-iteration-count: 1 !important;
+    transition-duration: 0.01ms !important;
+    scroll-behavior: auto !important;
+  }
+}
