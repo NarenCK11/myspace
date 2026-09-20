@@ -1,0 +1,75 @@
+# Local development stack: PostgreSQL + FastAPI + Vite.
+#   cp .env.example .env   (then edit)
+#   docker compose up --build
+#   docker compose exec api python -m app.cli create-owner
+#
+# Frontend: http://localhost:5173
+# API:      http://localhost:8000  (docs at /docs)
+
+services:
+  db:
+    image: postgres:16-alpine
+    restart: unless-stopped
+    environment:
+      POSTGRES_USER: ${POSTGRES_USER:-myspace}
+      POSTGRES_PASSWORD: ${POSTGRES_PASSWORD:-myspace}
+      POSTGRES_DB: ${POSTGRES_DB:-myspace}
+    ports:
+      - "${POSTGRES_PORT:-5432}:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U ${POSTGRES_USER:-myspace} -d ${POSTGRES_DB:-myspace}"]
+      interval: 5s
+      timeout: 5s
+      retries: 10
+
+  api:
+    build:
+      context: .
+      dockerfile: backend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      db:
+        condition: service_healthy
+    environment:
+      # Inside the compose network the database host is the service name.
+      DATABASE_URL: postgresql+psycopg://${POSTGRES_USER:-myspace}:${POSTGRES_PASSWORD:-myspace}@db:5432/${POSTGRES_DB:-myspace}
+      ENVIRONMENT: development
+      JWT_SECRET: ${JWT_SECRET:-local-development-secret-change-me}
+      TOKEN_ENCRYPTION_KEY: ${TOKEN_ENCRYPTION_KEY:-}
+      ACCESS_TOKEN_TTL_MINUTES: ${ACCESS_TOKEN_TTL_MINUTES:-15}
+      REFRESH_TOKEN_TTL_DAYS: ${REFRESH_TOKEN_TTL_DAYS:-30}
+      # Local dev is plain HTTP, so the cookie cannot be Secure.
+      COOKIE_SECURE: "false"
+      COOKIE_SAMESITE: lax
+      FRONTEND_URL: http://localhost:5173
+      CORS_ORIGINS: http://localhost:5173,http://127.0.0.1:5173
+      OWNER_LOGIN_ID: ${OWNER_LOGIN_ID:-owner}
+      OWNER_PASSWORD: ${OWNER_PASSWORD:-}
+      OWNER_DISPLAY_NAME: ${OWNER_DISPLAY_NAME:-Owner}
+      OWNER_TIMEZONE: ${OWNER_TIMEZONE:-UTC}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
+      GOOGLE_REDIRECT_URI: ${GOOGLE_REDIRECT_URI:-http://localhost:8000/api/google/callback}
+    ports:
+      - "8000:8000"
+
+  web:
+    build:
+      context: .
+      dockerfile: frontend/Dockerfile
+    restart: unless-stopped
+    depends_on:
+      - api
+    environment:
+      # The Vite dev server proxies /api to this target inside the network.
+      VITE_API_PROXY_TARGET: http://api:8000
+    ports:
+      - "5173:5173"
+    volumes:
+      - ./frontend/src:/app/src
+      - ./frontend/index.html:/app/index.html
+
+volumes:
+  postgres_data:

@@ -1,0 +1,13 @@
+.git
+.venv
+node_modules
+frontend/node_modules
+frontend/dist
+**/__pycache__
+*.sqlite3
+.env
+.env.*
+!.env.example
+tests
+.pytest_cache
+.ruff_cache
