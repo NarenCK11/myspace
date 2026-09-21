@@ -66,6 +66,13 @@ export function CalendarPage() {
     [gridStart.getTime(), gridEnd.getTime()], // eslint-disable-line react-hooks/exhaustive-deps
   );
 
+  // The Event filter can only ever match Google events, so it is left out
+  // until the integration is configured.
+  const visibleKinds = useMemo(
+    () => (data?.google_configured ? ALL_KINDS : ALL_KINDS.filter((k) => k !== "google_event")),
+    [data?.google_configured],
+  );
+
   const visibleItems = useMemo(
     () => (data?.items ?? []).filter((item) => !hiddenKinds.includes(item.kind)),
     [data, hiddenKinds],
@@ -107,7 +114,9 @@ export function CalendarPage() {
             ? data.last_synced_at
               ? `Google synced ${format(toDate(data.last_synced_at), "d MMM, HH:mm")}`
               : "Google connected"
-            : "Connect Google Calendar in Settings to see your events here."
+            : data?.google_configured
+              ? "Connect Google Calendar in Settings to see your events here."
+              : "Tasks, reminders and logged activities across the month."
         }
         actions={
           <div className="flex items-center gap-1">
@@ -136,7 +145,7 @@ export function CalendarPage() {
       <div className="flex flex-wrap items-center justify-between gap-3">
         <h2 className="text-lg font-semibold tracking-tight">{format(cursor, "MMMM yyyy")}</h2>
         <div className="no-scrollbar flex gap-1.5 overflow-x-auto">
-          {ALL_KINDS.map((kind) => {
+          {visibleKinds.map((kind) => {
             const hidden = hiddenKinds.includes(kind);
             return (
               <button
@@ -315,14 +324,16 @@ export function CalendarPage() {
                 description={
                   data?.google_connected
                     ? "Tasks, reminders and events all land here."
-                    : "Connect Google Calendar to bring your events in."
+                    : data?.google_configured
+                      ? "Connect Google Calendar to bring your events in."
+                      : "Tasks, reminders and logged activities all land here."
                 }
                 action={
-                  data?.google_connected ? undefined : (
+                  data?.google_configured && !data?.google_connected ? (
                     <Button asChild size="sm" variant="secondary">
                       <Link to="/settings">Go to settings</Link>
                     </Button>
-                  )
+                  ) : undefined
                 }
               />
             )}

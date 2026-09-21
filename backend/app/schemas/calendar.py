@@ -36,6 +36,7 @@ class CalendarFeed(BaseModel):
     end: dt.datetime
     items: list[CalendarItem]
     google_connected: bool
+    google_configured: bool = False
     last_synced_at: dt.datetime | None = None
 
 

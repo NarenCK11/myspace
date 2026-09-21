@@ -7,6 +7,7 @@ from typing import Annotated
 
 from fastapi import APIRouter, Query
 
+from app.core.config import settings
 from app.core.deps import CurrentUser, DbSession
 from app.core.errors import AppError
 from app.schemas.calendar import CalendarFeed
@@ -61,5 +62,6 @@ def list_calendar_events(
         end=end,
         items=items,
         google_connected=account is not None,
+        google_configured=settings.google_configured,
         last_synced_at=account.last_synced_at if account else None,
     )

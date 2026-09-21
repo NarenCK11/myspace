@@ -38,6 +38,7 @@ class DashboardResponse(BaseModel):
     recent_activities: list[ActivityRead] = Field(default_factory=list)
     important_notes: list[NoteRead] = Field(default_factory=list)
     google_connected: bool = False
+    google_configured: bool = False
     completion_rate: float = 0.0
     streak_days: int = 0
 
@@ -45,6 +46,8 @@ class DashboardResponse(BaseModel):
 class TodayResponse(BaseModel):
     date: dt.date
     timezone: str
+    google_connected: bool = False
+    google_configured: bool = False
     tasks: list[TaskRead] = Field(default_factory=list)
     overdue_tasks: list[TaskRead] = Field(default_factory=list)
     reminders: list[ReminderRead] = Field(default_factory=list)

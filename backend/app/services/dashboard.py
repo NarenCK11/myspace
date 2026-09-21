@@ -7,6 +7,7 @@ import datetime as dt
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
+from app.core.config import settings
 from app.db.base import utcnow
 from app.models.content import Activity, Note, Reminder, Task
 from app.models.enums import ActivitySource, ReminderStatus, TaskStatus
@@ -222,6 +223,7 @@ def build_dashboard(db: Session, user: User) -> dict:
         "recent_activities": recent_activities,
         "important_notes": important_notes,
         "google_connected": google_sync.get_account(db, user.id) is not None,
+        "google_configured": settings.google_configured,
         "completion_rate": completion_rate,
         "streak_days": completion_streak(db, user),
     }
@@ -291,6 +293,8 @@ def build_today(db: Session, user: User, day: dt.date | None = None) -> dict:
     return {
         "date": target,
         "timezone": tz,
+        "google_connected": google_sync.get_account(db, user.id) is not None,
+        "google_configured": settings.google_configured,
         "tasks": tasks,
         "overdue_tasks": overdue,
         "reminders": reminders,

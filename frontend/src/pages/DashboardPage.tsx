@@ -204,6 +204,12 @@ export function DashboardPage() {
         </div>
 
         <div className="space-y-5">
+          {/*
+            This card only ever shows Google events, so it is hidden entirely
+            until the integration is configured on the server. Nothing here
+            nags about a feature the owner has not asked for.
+          */}
+          {data?.google_configured && (
           <Card>
             <CardHeader>
               <CardTitle className="flex items-center gap-2">
@@ -266,6 +272,7 @@ export function DashboardPage() {
               )}
             </CardContent>
           </Card>
+          )}
 
           <Card>
             <CardHeader>

@@ -106,16 +106,55 @@ export function GoogleSection() {
   if (isError) return <ErrorState message={errorMessage(error)} onRetry={() => void refetch()} />;
   if (isLoading || !data) return <ListSkeleton rows={3} />;
 
+  // Not an error state: the portal is fully usable without Google. This is an
+  // optional integration, so it reads as "available when you want it" and
+  // spells out the three steps to switch it on.
   if (!data.configured) {
     return (
       <Card>
-        <CardContent className="pt-5">
-          <EmptyState
-            icon={AlertTriangle}
-            title="Google Calendar is not configured on the server"
-            description="Set GOOGLE_CLIENT_ID and GOOGLE_CLIENT_SECRET in the backend environment, then restart it."
-            className="border-0"
-          />
+        <CardHeader>
+          <div>
+            <CardTitle className="flex items-center gap-2">
+              Google Calendar
+              <Badge variant="outline">Optional</Badge>
+            </CardTitle>
+            <CardDescription>
+              Turned off. Everything else in the portal works without it.
+            </CardDescription>
+          </div>
+        </CardHeader>
+        <CardContent className="space-y-4">
+          <p className="text-sm text-muted-foreground">
+            Your calendar already shows tasks, reminders and logged activities. Switch this on
+            whenever you want your Google events alongside them.
+          </p>
+
+          <div className="rounded-lg border border-border bg-surface-sunken p-4">
+            <p className="mb-2 text-2xs font-semibold uppercase tracking-wide text-muted-foreground">
+              To enable it
+            </p>
+            <ol className="space-y-1.5 text-sm text-muted-foreground">
+              <li className="flex gap-2">
+                <span className="text-muted-foreground/60">1.</span>
+                <span>
+                  Create an OAuth client in Google Cloud (see{" "}
+                  <span className="font-medium text-foreground">README &sect; 5</span>).
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-muted-foreground/60">2.</span>
+                <span>
+                  Set <code className="kbd">GOOGLE_CLIENT_ID</code>,{" "}
+                  <code className="kbd">GOOGLE_CLIENT_SECRET</code> and{" "}
+                  <code className="kbd">GOOGLE_REDIRECT_URI</code> on the backend.
+                </span>
+              </li>
+              <li className="flex gap-2">
+                <span className="text-muted-foreground/60">3.</span>
+                <span>Restart the backend, then come back here and press Connect.</span>
+              </li>
+            </ol>
+          </div>
         </CardContent>
       </Card>
     );

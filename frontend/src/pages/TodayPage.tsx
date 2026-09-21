@@ -146,6 +146,9 @@ export function TodayPage() {
           </div>
 
           <div className="space-y-5">
+            {/* Schedule is Google-only, so it stays out of the way until
+                the integration is configured on the server. */}
+            {data?.google_configured && (
             <section>
               <SectionTitle count={data?.events.length}>
                 <CalendarDays className="size-4 text-muted-foreground" />
@@ -187,6 +190,7 @@ export function TodayPage() {
                 </CardContent>
               </Card>
             </section>
+            )}
 
             <section>
               <SectionTitle count={data?.reminders.length}>

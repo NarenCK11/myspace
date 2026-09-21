@@ -146,6 +146,7 @@ export interface CalendarFeed {
   end: string;
   items: CalendarItem[];
   google_connected: boolean;
+  google_configured: boolean;
   last_synced_at: string | null;
 }
 
@@ -220,6 +221,7 @@ export interface DashboardResponse {
   recent_activities: Activity[];
   important_notes: Note[];
   google_connected: boolean;
+  google_configured: boolean;
   completion_rate: number;
   streak_days: number;
 }
@@ -227,6 +229,8 @@ export interface DashboardResponse {
 export interface TodayResponse {
   date: string;
   timezone: string;
+  google_connected: boolean;
+  google_configured: boolean;
   tasks: Task[];
   overdue_tasks: Task[];
   reminders: Reminder[];

@@ -6,13 +6,20 @@ a unified calendar with Google Calendar, personal history and search.
 There is no registration and no public access. One owner account is created
 from environment variables, and everything is stored in PostgreSQL.
 
+**Google Calendar is optional.** Leave its credentials unset and the portal
+runs completely without it - the calendar still shows tasks, reminders and
+logged activities, and the UI hides the integration rather than prompting you
+to configure it. Switch it on later by setting two environment variables and
+restarting the backend; no code change, no migration, nothing lost.
+See [section 5](#5-google-cloud-oauth-setup).
+
 | | |
 |---|---|
 | **Frontend** | React 18 · TypeScript · Vite · Tailwind CSS · Radix UI |
 | **Backend** | Python 3.12 · FastAPI · SQLAlchemy 2 · Alembic |
 | **Database** | PostgreSQL 16 |
 | **Auth** | JWT access tokens + rotating refresh tokens in HttpOnly cookies |
-| **Integration** | Google OAuth 2.0 (PKCE) + Google Calendar API v3 |
+| **Integration** | Google OAuth 2.0 (PKCE) + Google Calendar API v3 *(optional)* |
 
 ---
 
@@ -211,9 +218,9 @@ committed; `.env` is git-ignored and `.env.example` is the documented template.
 | `OWNER_DISPLAY_NAME` | no | `Owner` | Name shown in the greeting. |
 | `OWNER_EMAIL` | no | – | Optional. |
 | `OWNER_TIMEZONE` | no | `UTC` | IANA name, e.g. `Asia/Kolkata`. Decides what "today" means. |
-| `GOOGLE_CLIENT_ID` | for Google | – | From Google Cloud Console. |
-| `GOOGLE_CLIENT_SECRET` | for Google | – | Never exposed to the browser. |
-| `GOOGLE_REDIRECT_URI` | for Google | `http://localhost:8000/api/google/callback` | Must match Google exactly. |
+| `GOOGLE_CLIENT_ID` | **optional** | – | Leave blank to run without Google Calendar. |
+| `GOOGLE_CLIENT_SECRET` | **optional** | – | Never exposed to the browser. |
+| `GOOGLE_REDIRECT_URI` | with Google | `http://localhost:8000/api/google/callback` | Must match Google exactly. |
 | `GOOGLE_SYNC_WINDOW_PAST_DAYS` | no | `30` | How far back to cache events. |
 | `GOOGLE_SYNC_WINDOW_FUTURE_DAYS` | no | `120` | How far forward to cache events. |
 | `WEB_CONCURRENCY` | no | `2` | Gunicorn workers (Docker image). |
@@ -298,6 +305,13 @@ Security**, which signs out every other device. Once that is done, remove
 ---
 
 ## 5. Google Cloud OAuth setup
+
+> **Optional - skip this section entirely if you do not want Google Calendar.**
+> With `GOOGLE_CLIENT_ID` and `GOOGLE_CLIENT_SECRET` unset the portal works
+> normally: the Dashboard and Today pages drop their schedule cards, the
+> Calendar page shows only Tasks / Reminders / Activities, and **Settings ->
+> Google Calendar** simply explains how to turn it on. Come back whenever you
+> want it - enabling it later needs only those two variables and a restart.
 
 1. Go to the [Google Cloud Console](https://console.cloud.google.com/) and
    create a project (e.g. *MySpace*).
@@ -547,10 +561,14 @@ refresh cookie is reaching the backend. If you are logged out, `COOKIE_SAMESITE`
 Add a task via Quick add, tick it off, then search for its title. It should
 appear under Tasks in the results, and the completion should show in Activities.
 
-**10. Google Calendar**
+**10. Google Calendar (only if you enabled it)**
 
-Connect from Settings, then confirm events appear on the Calendar page and that
-**Sync now** reports the number of events updated.
+`/health` reports `"google_configured"`. If it is `false`, the integration is
+off and the UI will not mention it - that is the expected state when you have
+not set the credentials.
+
+If it is `true`, connect from Settings, then confirm events appear on the
+Calendar page and that **Sync now** reports the number of events updated.
 
 ---
 
@@ -559,7 +577,7 @@ Connect from Settings, then confirm events appear on the Calendar page and that
 ### Backend
 
 ```bash
-pytest                       # 69 tests
+pytest                       # 77 tests
 pytest -v                    # verbose
 pytest tests/test_auth.py    # one file
 ruff check .                 # lint
@@ -584,6 +602,9 @@ migrations**, so the migration chain is exercised alongside the code. It covers:
   replay rejection, denied consent, event caching, transparent access-token
   refresh, missing refresh token, calendar toggles, sync diffing, disconnect,
   and that no token material ever appears in an API response.
+- **Google switched off** - every page and endpoint still works with no
+  credentials configured, the API reports `google_configured: false` so the UI
+  can hide the integration, and the flags flip once credentials are present.
 - **Migrations** — upgrade, downgrade, re-upgrade, and every model column
   present in the migrated schema.
 - **Security primitives** — Argon2 hashing, JWT expiry, refresh-token hashing,
