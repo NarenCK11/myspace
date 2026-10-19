@@ -24,6 +24,7 @@ const NotesPage = lazy(() => import("@/pages/NotesPage").then((m) => ({ default:
 const ActivitiesPage = lazy(() =>
   import("@/pages/ActivitiesPage").then((m) => ({ default: m.ActivitiesPage })),
 );
+const MealsPage = lazy(() => import("@/pages/MealsPage").then((m) => ({ default: m.MealsPage })));
 const SearchPage = lazy(() => import("@/pages/SearchPage").then((m) => ({ default: m.SearchPage })));
 const SettingsPage = lazy(() =>
   import("@/pages/SettingsPage").then((m) => ({ default: m.SettingsPage })),
@@ -96,6 +97,7 @@ function AppRoutes() {
         <Route path="reminders" element={<RemindersPage />} />
         <Route path="notes" element={<NotesPage />} />
         <Route path="activities" element={<ActivitiesPage />} />
+        <Route path="meals" element={<MealsPage />} />
         <Route path="search" element={<SearchPage />} />
         <Route path="settings" element={<SettingsPage />} />
       </Route>

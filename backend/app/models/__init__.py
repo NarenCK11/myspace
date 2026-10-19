@@ -15,6 +15,8 @@ from app.models.content import (
 from app.models.enums import (
     ActivitySource,
     EntityType,
+    LabelTone,
+    MealType,
     Priority,
     ReminderStatus,
     RepeatRule,
@@ -22,6 +24,7 @@ from app.models.enums import (
     Theme,
 )
 from app.models.google import CalendarEvent, GoogleAccount, GoogleCalendar, OAuthState
+from app.models.nutrition import FoodLabel, Meal, WeightEntry, meal_labels
 from app.models.user import LoginAttempt, RefreshSession, User
 
 __all__ = [
@@ -30,6 +33,10 @@ __all__ = [
     "Base",
     "CalendarEvent",
     "EntityType",
+    "FoodLabel",
+    "LabelTone",
+    "Meal",
+    "MealType",
     "GoogleAccount",
     "GoogleCalendar",
     "LoginAttempt",
@@ -45,7 +52,9 @@ __all__ = [
     "TaskStatus",
     "Theme",
     "User",
+    "WeightEntry",
     "activity_tags",
+    "meal_labels",
     "note_tags",
     "reminder_tags",
     "task_tags",

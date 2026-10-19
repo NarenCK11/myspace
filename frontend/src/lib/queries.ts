@@ -2,9 +2,14 @@ import type {
   Activity,
   CalendarFeed,
   DashboardResponse,
+  DaySummary,
+  FoodLabelWithCount,
   GoogleStatus,
   GoogleSyncResult,
+  Meal,
+  MealSuggestion,
   Note,
+  NutritionHistory,
   Page,
   QuickAddPayload,
   Reminder,
@@ -14,6 +19,8 @@ import type {
   Task,
   TodayResponse,
   User,
+  WeightEntry,
+  WeightStats,
 } from "@/types/api";
 
 import { api } from "./api";
@@ -31,7 +38,24 @@ export const keys = {
   google: ["google", "status"] as const,
   search: (q: string, kinds: string[]) => ["search", q, kinds] as const,
   sessions: ["auth", "sessions"] as const,
+  meals: (params: Record<string, unknown>) => ["meals", params] as const,
+  mealSuggestions: ["meals", "suggestions"] as const,
+  foodLabels: ["food-labels"] as const,
+  nutritionSummary: (day: string) => ["nutrition", "summary", day] as const,
+  nutritionHistory: (days: number) => ["nutrition", "history", days] as const,
+  weights: (params: Record<string, unknown>) => ["weights", params] as const,
+  weightStats: ["weights", "stats"] as const,
 };
+
+/** Everything a meal, label or weight change can make stale. */
+export const NUTRITION_KEYS = [
+  ["meals"],
+  ["food-labels"],
+  ["nutrition"],
+  ["weights"],
+  ["dashboard"],
+  ["search"],
+];
 
 /** Every key that content mutations can invalidate in one go. */
 export const CONTENT_KEYS = [
@@ -101,3 +125,24 @@ export const changePassword = (current_password: string, new_password: string) =
   unwrap<{ message: string }>(
     api.post("/auth/change-password", { current_password, new_password }),
   );
+
+// --- Meals & weight ---------------------------------------------------------
+
+export const fetchMeals = (params: Record<string, unknown>) =>
+  unwrap<Page<Meal>>(api.get("/meals", { params }));
+
+export const fetchMealSuggestions = () =>
+  unwrap<MealSuggestion[]>(api.get("/meals/suggestions", { params: { limit: 8 } }));
+
+export const fetchFoodLabels = () => unwrap<FoodLabelWithCount[]>(api.get("/meal-labels"));
+
+export const fetchNutritionSummary = (day: string) =>
+  unwrap<DaySummary>(api.get("/nutrition/summary", { params: { day } }));
+
+export const fetchNutritionHistory = (days: number) =>
+  unwrap<NutritionHistory>(api.get("/nutrition/history", { params: { days } }));
+
+export const fetchWeights = (params: Record<string, unknown>) =>
+  unwrap<WeightEntry[]>(api.get("/weights", { params }));
+
+export const fetchWeightStats = () => unwrap<WeightStats>(api.get("/weights/stats"));

@@ -4,7 +4,7 @@ from __future__ import annotations
 
 import datetime as dt
 
-from sqlalchemy import Boolean, ForeignKey, Index, String, Text
+from sqlalchemy import Boolean, ForeignKey, Index, String, Text, false
 from sqlalchemy.orm import Mapped, mapped_column, relationship
 
 from app.db.base import Base, TimestampMixin, UUIDPrimaryKeyMixin
@@ -25,6 +25,11 @@ class User(UUIDPrimaryKeyMixin, TimestampMixin, Base):
     theme: Mapped[str] = mapped_column(String(16), nullable=False, default=Theme.SYSTEM.value)
     week_starts_on: Mapped[int] = mapped_column(nullable=False, default=1)  # 0=Sunday, 1=Monday
     is_active: Mapped[bool] = mapped_column(Boolean, nullable=False, default=True)
+    # Default food labels are created once, on first use, so labels the owner
+    # later deletes do not come back.
+    food_labels_seeded: Mapped[bool] = mapped_column(
+        Boolean, nullable=False, default=False, server_default=false()
+    )
     last_login_at: Mapped[dt.datetime | None] = mapped_column(UTCDateTime, nullable=True)
     password_changed_at: Mapped[dt.datetime | None] = mapped_column(UTCDateTime, nullable=True)
 

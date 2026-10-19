@@ -1,5 +1,6 @@
 import { useSearchParams } from "react-router-dom";
 
+import { FoodLabelsSection } from "@/components/settings/FoodLabelsSection";
 import { GoogleSection } from "@/components/settings/GoogleSection";
 import { ProfileSection } from "@/components/settings/ProfileSection";
 import { SecuritySection } from "@/components/settings/SecuritySection";
@@ -11,6 +12,7 @@ const TABS = [
   { value: "profile", label: "Profile" },
   { value: "google", label: "Google Calendar" },
   { value: "tags", label: "Tags" },
+  { value: "food", label: "Food labels" },
   { value: "security", label: "Security" },
 ];
 
@@ -47,6 +49,9 @@ export function SettingsPage() {
         </TabsContent>
         <TabsContent value="tags">
           <TagsSection />
+        </TabsContent>
+        <TabsContent value="food">
+          <FoodLabelsSection />
         </TabsContent>
         <TabsContent value="security">
           <SecuritySection />

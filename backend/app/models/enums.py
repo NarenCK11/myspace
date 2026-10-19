@@ -55,3 +55,24 @@ class Theme(StrEnum):
     LIGHT = "light"
     DARK = "dark"
     SYSTEM = "system"
+
+
+class MealType(StrEnum):
+    BREAKFAST = "breakfast"
+    LUNCH = "lunch"
+    DINNER = "dinner"
+    SNACK = "snack"
+    DRINK = "drink"
+    OTHER = "other"
+
+
+class LabelTone(StrEnum):
+    """How a food label reads when summarising a day.
+
+    ``good`` and ``bad`` drive the healthy/unhealthy split in summaries;
+    ``neutral`` labels (carbs, fatty, ...) describe a meal without judging it.
+    """
+
+    GOOD = "good"
+    BAD = "bad"
+    NEUTRAL = "neutral"

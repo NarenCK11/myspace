@@ -12,7 +12,8 @@ from app.db.base import utcnow
 from app.models.content import Activity, Note, Reminder, Task
 from app.models.enums import ActivitySource, ReminderStatus, TaskStatus
 from app.models.user import User
-from app.services import calendar_feed, google_sync, timeutil
+from app.schemas.nutrition import NutritionDashboard
+from app.services import calendar_feed, google_sync, nutrition, timeutil
 
 OPEN_STATUSES = (TaskStatus.TODO.value, TaskStatus.IN_PROGRESS.value)
 
@@ -224,6 +225,10 @@ def build_dashboard(db: Session, user: User) -> dict:
         "important_notes": important_notes,
         "google_connected": google_sync.get_account(db, user.id) is not None,
         "google_configured": settings.google_configured,
+        "nutrition": NutritionDashboard(
+            today=nutrition.day_summary(db, user, today),
+            weight=nutrition.weight_stats(db, user),
+        ),
         "completion_rate": completion_rate,
         "streak_days": completion_streak(db, user),
     }

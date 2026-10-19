@@ -24,24 +24,11 @@ import { Card, CardContent } from "@/components/ui/card";
 import { PageHeader } from "@/components/ui/page-header";
 import { EmptyState, ErrorState, ListSkeleton } from "@/components/ui/states";
 import { errorMessage } from "@/lib/api";
-import { formatLongDate, formatTime } from "@/lib/datetime";
+import { formatLongDate, formatTime, shiftDay, todayISO } from "@/lib/datetime";
 import { fetchToday, keys } from "@/lib/queries";
 
-function shiftDay(iso: string, days: number) {
-  const date = new Date(`${iso}T12:00:00`);
-  date.setDate(date.getDate() + days);
-  return date.toISOString().slice(0, 10);
-}
-
-function todayISO() {
-  const now = new Date();
-  return `${now.getFullYear()}-${String(now.getMonth() + 1).padStart(2, "0")}-${String(
-    now.getDate(),
-  ).padStart(2, "0")}`;
-}
-
 export function TodayPage() {
-  const [day, setDay] = useState(todayISO);
+  const [day, setDay] = useState(() => todayISO());
   const [taskOpen, setTaskOpen] = useState(false);
   const [activityOpen, setActivityOpen] = useState(false);
   const isToday = day === todayISO();

@@ -222,6 +222,7 @@ export interface DashboardResponse {
   important_notes: Note[];
   google_connected: boolean;
   google_configured: boolean;
+  nutrition: NutritionDashboard | null;
   completion_rate: number;
   streak_days: number;
 }
@@ -266,4 +267,118 @@ export interface QuickAddPayload {
   when?: string | null;
   priority?: Priority;
   tag_ids?: string[];
+}
+
+// --- Meals & weight ---------------------------------------------------------
+
+export type MealType = "breakfast" | "lunch" | "dinner" | "snack" | "drink" | "other";
+export type LabelTone = "good" | "bad" | "neutral";
+
+export interface FoodLabel {
+  id: string;
+  name: string;
+  color: string;
+  tone: LabelTone;
+}
+
+export interface FoodLabelWithCount extends FoodLabel {
+  meal_count: number;
+}
+
+export interface Meal {
+  id: string;
+  name: string;
+  meal_type: MealType;
+  eaten_at: string;
+  portion: string | null;
+  calories: number | null;
+  notes: string | null;
+  created_at: string;
+  updated_at: string;
+  labels: FoodLabel[];
+}
+
+export interface MealSuggestion {
+  name: string;
+  meal_type: MealType;
+  portion: string | null;
+  calories: number | null;
+  times_logged: number;
+  last_eaten_at: string;
+  labels: FoodLabel[];
+}
+
+export interface MealPayload {
+  name: string;
+  meal_type: MealType;
+  eaten_at: string | null;
+  portion: string | null;
+  calories: number | null;
+  notes: string | null;
+  label_ids: string[];
+}
+
+export interface WeightEntry {
+  id: string;
+  logged_on: string;
+  weight_kg: number;
+  note: string | null;
+  created_at: string;
+  updated_at: string;
+}
+
+export interface WeightStats {
+  latest: WeightEntry | null;
+  previous: WeightEntry | null;
+  logged_today: boolean;
+  entries_count: number;
+  change_since_previous: number | null;
+  average_7d: number | null;
+  change_7d: number | null;
+  change_30d: number | null;
+  min_kg: number | null;
+  max_kg: number | null;
+}
+
+export interface LabelCount {
+  label_id: string;
+  name: string;
+  color: string;
+  tone: LabelTone;
+  count: number;
+}
+
+export interface MealBuckets {
+  meals_count: number;
+  good_count: number;
+  mixed_count: number;
+  bad_count: number;
+  neutral_count: number;
+}
+
+export interface DaySummary extends MealBuckets {
+  date: string;
+  calories_total: number;
+  calories_logged_count: number;
+  label_counts: LabelCount[];
+  weight_kg: number | null;
+}
+
+export interface NutritionDay extends MealBuckets {
+  date: string;
+  calories_total: number;
+  weight_kg: number | null;
+}
+
+export interface NutritionHistory extends MealBuckets {
+  start: string;
+  end: string;
+  days: NutritionDay[];
+  label_totals: LabelCount[];
+  days_with_meals: number;
+}
+
+export interface NutritionDashboard {
+  today: DaySummary;
+  weight: WeightStats;
 }

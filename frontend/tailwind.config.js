@@ -50,6 +50,12 @@ export default {
           DEFAULT: "hsl(var(--info))",
           soft: "hsl(var(--info-soft))",
         },
+        viz: {
+          good: "var(--viz-good)",
+          mixed: "var(--viz-mixed)",
+          bad: "var(--viz-bad)",
+          neutral: "var(--viz-neutral)",
+        },
       },
       borderRadius: {
         lg: "var(--radius)",

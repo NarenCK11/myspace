@@ -74,3 +74,25 @@ export function endOfDayISO(date: Date) {
   copy.setHours(23, 59, 0, 0);
   return copy.toISOString();
 }
+
+/** Today as YYYY-MM-DD in the given IANA timezone (falls back to the browser). */
+export function todayISO(timeZone?: string) {
+  try {
+    return new Intl.DateTimeFormat("en-CA", { timeZone }).format(new Date());
+  } catch {
+    return new Intl.DateTimeFormat("en-CA").format(new Date());
+  }
+}
+
+/** Moves a YYYY-MM-DD date by whole days, without touching timezones. */
+export function shiftDay(iso: string, days: number) {
+  const [year, month, day] = iso.split("-").map(Number);
+  const date = new Date(Date.UTC(year, month - 1, day + days));
+  return date.toISOString().slice(0, 10);
+}
+
+/** Parses YYYY-MM-DD as a local calendar date (not UTC midnight). */
+export function parseDay(iso: string) {
+  const [year, month, day] = iso.split("-").map(Number);
+  return new Date(year, month - 1, day);
+}

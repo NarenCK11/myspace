@@ -8,6 +8,7 @@ import {
   Settings,
   StickyNote,
   Sun,
+  UtensilsCrossed,
 } from "lucide-react";
 import type { LucideIcon } from "lucide-react";
 
@@ -27,6 +28,7 @@ export const PRIMARY_NAV: NavItem[] = [
   { to: "/reminders", label: "Reminders", icon: Bell, shortcut: "r" },
   { to: "/notes", label: "Notes", icon: StickyNote, shortcut: "n" },
   { to: "/activities", label: "Activities", icon: Activity, shortcut: "a" },
+  { to: "/meals", label: "Meals", icon: UtensilsCrossed, shortcut: "m" },
 ];
 
 export const SECONDARY_NAV: NavItem[] = [

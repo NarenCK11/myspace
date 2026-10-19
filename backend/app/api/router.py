@@ -7,11 +7,15 @@ from app.api.routes import (
     auth,
     calendar,
     dashboard,
+    food_labels,
     google,
+    meals,
     notes,
+    nutrition,
     reminders,
     tags,
     tasks,
+    weights,
 )
 
 api_router = APIRouter()
@@ -24,3 +28,7 @@ api_router.include_router(activities.router)
 api_router.include_router(tags.router)
 api_router.include_router(calendar.router)
 api_router.include_router(google.router)
+api_router.include_router(meals.router)
+api_router.include_router(food_labels.router)
+api_router.include_router(weights.router)
+api_router.include_router(nutrition.router)

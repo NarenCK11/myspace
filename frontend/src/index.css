@@ -166,3 +166,18 @@
     scroll-behavior: auto !important;
   }
 }
+
+/*
+ * Chart colours for the meal-quality bars. These carry meaning (good / mixed /
+ * bad), so they use the status palette rather than a categorical one. Adjacent
+ * pairs were checked for colour-vision separation; the legend, tooltip and
+ * table view carry the labels so colour is never the only channel.
+ */
+@layer base {
+  :root {
+    --viz-good: #0ca30c;
+    --viz-mixed: #fab219;
+    --viz-bad: #d03b3b;
+    --viz-neutral: #8d8d89;
+  }
+}

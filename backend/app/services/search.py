@@ -9,6 +9,7 @@ from sqlalchemy.orm import Session
 
 from app.models.content import Activity, Note, Reminder, Tag, Task
 from app.models.google import CalendarEvent
+from app.models.nutrition import Meal
 from app.schemas.dashboard import SearchHit
 
 SNIPPET_RADIUS = 90
@@ -17,7 +18,7 @@ SNIPPET_RADIUS = 90
 # portable across PostgreSQL and SQLite without extra quoting rules.
 ESCAPE_CHAR = "!"
 
-ALL_KINDS = ("task", "note", "reminder", "activity", "event", "tag")
+ALL_KINDS = ("task", "note", "reminder", "activity", "meal", "event", "tag")
 
 
 def _snippet(text: str | None, query: str) -> str | None:
@@ -37,7 +38,7 @@ def _snippet(text: str | None, query: str) -> str | None:
     return f"{prefix}{flat[start:end]}{suffix}"
 
 
-def _like_pattern(query: str) -> str:
+def like_pattern(query: str) -> str:
     escaped = (
         query.replace(ESCAPE_CHAR, ESCAPE_CHAR * 2)
         .replace("%", ESCAPE_CHAR + "%")
@@ -46,7 +47,7 @@ def _like_pattern(query: str) -> str:
     return f"%{escaped}%"
 
 
-def _matches(column, pattern: str):
+def matches(column, pattern: str):
     return column.ilike(pattern, escape=ESCAPE_CHAR)
 
 
@@ -55,7 +56,7 @@ def _task_hits(db, user_id, pattern, term, limit):
         select(Task)
         .where(
             Task.user_id == user_id,
-            or_(_matches(Task.title, pattern), _matches(Task.description, pattern)),
+            or_(matches(Task.title, pattern), matches(Task.description, pattern)),
         )
         .order_by(Task.updated_at.desc())
         .limit(limit)
@@ -80,7 +81,7 @@ def _note_hits(db, user_id, pattern, term, limit):
         select(Note)
         .where(
             Note.user_id == user_id,
-            or_(_matches(Note.title, pattern), _matches(Note.content, pattern)),
+            or_(matches(Note.title, pattern), matches(Note.content, pattern)),
         )
         .order_by(Note.updated_at.desc())
         .limit(limit)
@@ -105,7 +106,7 @@ def _reminder_hits(db, user_id, pattern, term, limit):
         select(Reminder)
         .where(
             Reminder.user_id == user_id,
-            or_(_matches(Reminder.title, pattern), _matches(Reminder.notes, pattern)),
+            or_(matches(Reminder.title, pattern), matches(Reminder.notes, pattern)),
         )
         .order_by(Reminder.remind_at.desc())
         .limit(limit)
@@ -130,7 +131,7 @@ def _activity_hits(db, user_id, pattern, term, limit):
         select(Activity)
         .where(
             Activity.user_id == user_id,
-            or_(_matches(Activity.title, pattern), _matches(Activity.description, pattern)),
+            or_(matches(Activity.title, pattern), matches(Activity.description, pattern)),
         )
         .order_by(Activity.occurred_at.desc())
         .limit(limit)
@@ -150,15 +151,44 @@ def _activity_hits(db, user_id, pattern, term, limit):
     ]
 
 
+def _meal_hits(db, user_id, pattern, term, limit):
+    rows = db.execute(
+        select(Meal)
+        .where(
+            Meal.user_id == user_id,
+            or_(
+                matches(Meal.name, pattern),
+                matches(Meal.notes, pattern),
+                matches(Meal.portion, pattern),
+            ),
+        )
+        .order_by(Meal.eaten_at.desc())
+        .limit(limit)
+    ).scalars()
+    return [
+        SearchHit(
+            id=m.id,
+            kind="meal",
+            title=m.name,
+            snippet=_snippet(m.notes or m.portion, term),
+            occurred_at=m.eaten_at,
+            url=f"/meals?day={m.eaten_at.date().isoformat()}&focus={m.id}",
+            status=m.meal_type,
+            tags=[label.name for label in m.labels],
+        )
+        for m in rows
+    ]
+
+
 def _event_hits(db, user_id, pattern, term, limit):
     rows = db.execute(
         select(CalendarEvent)
         .where(
             CalendarEvent.user_id == user_id,
             or_(
-                _matches(CalendarEvent.summary, pattern),
-                _matches(CalendarEvent.description, pattern),
-                _matches(CalendarEvent.location, pattern),
+                matches(CalendarEvent.summary, pattern),
+                matches(CalendarEvent.description, pattern),
+                matches(CalendarEvent.location, pattern),
             ),
         )
         .order_by(CalendarEvent.start_at.desc())
@@ -181,7 +211,7 @@ def _event_hits(db, user_id, pattern, term, limit):
 def _tag_hits(db, user_id, pattern, term, limit):
     rows = db.execute(
         select(Tag)
-        .where(Tag.user_id == user_id, _matches(Tag.name, pattern))
+        .where(Tag.user_id == user_id, matches(Tag.name, pattern))
         .order_by(Tag.name.asc())
         .limit(limit)
     ).scalars()
@@ -203,6 +233,7 @@ _HANDLERS = {
     "note": _note_hits,
     "reminder": _reminder_hits,
     "activity": _activity_hits,
+    "meal": _meal_hits,
     "event": _event_hits,
     "tag": _tag_hits,
 }
@@ -216,7 +247,7 @@ def search(
     if not term:
         return {"query": query, "total": 0, "counts": {}, "hits": []}
 
-    pattern = _like_pattern(term)
+    pattern = like_pattern(term)
     wanted = [k for k in ALL_KINDS if k in (kinds or set(ALL_KINDS))]
 
     counts: dict[str, int] = {}

@@ -16,6 +16,7 @@ const KIND_LABELS: Record<string, string> = {
   note: "Note",
   reminder: "Reminder",
   activity: "Activity",
+  meal: "Meal",
   event: "Event",
   tag: "Tag",
 };

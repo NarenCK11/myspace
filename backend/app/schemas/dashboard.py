@@ -8,6 +8,7 @@ from pydantic import BaseModel, Field
 
 from app.schemas.calendar import CalendarItem
 from app.schemas.content import ActivityRead, NoteRead, ReminderRead, TaskRead, TaskStats
+from app.schemas.nutrition import NutritionDashboard
 
 
 class DashboardCounts(BaseModel):
@@ -39,6 +40,7 @@ class DashboardResponse(BaseModel):
     important_notes: list[NoteRead] = Field(default_factory=list)
     google_connected: bool = False
     google_configured: bool = False
+    nutrition: NutritionDashboard | None = None
     completion_rate: float = 0.0
     streak_days: int = 0
 

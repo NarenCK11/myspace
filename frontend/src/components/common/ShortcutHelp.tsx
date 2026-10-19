@@ -21,6 +21,7 @@ const GROUPS: { title: string; items: { keys: string[]; label: string }[] }[] = 
       { keys: ["G", "R"], label: "Reminders" },
       { keys: ["G", "N"], label: "Notes" },
       { keys: ["G", "A"], label: "Activities" },
+      { keys: ["G", "M"], label: "Meals" },
       { keys: ["G", "S"], label: "Settings" },
     ],
   },

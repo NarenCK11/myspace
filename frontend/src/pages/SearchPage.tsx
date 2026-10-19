@@ -19,6 +19,7 @@ const KINDS = [
   { value: "note", label: "Notes" },
   { value: "reminder", label: "Reminders" },
   { value: "activity", label: "Activities" },
+  { value: "meal", label: "Meals" },
   { value: "event", label: "Events" },
   { value: "tag", label: "Tags" },
 ];
