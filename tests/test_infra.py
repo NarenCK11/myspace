@@ -115,6 +115,39 @@ def test_create_owner_rejects_a_short_password(monkeypatch):
         cli.create_owner()
 
 
+def test_bootstrap_owner_creates_account_when_database_is_empty(monkeypatch, db):
+    from app import cli
+    from app.core import security
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "owner_login_id", "bootstrap-owner")
+    monkeypatch.setattr(settings, "owner_password", "a-long-enough-passphrase")
+    monkeypatch.setattr(settings, "owner_display_name", "Bootstrap Owner")
+    monkeypatch.setattr(settings, "owner_email", None)
+    monkeypatch.setattr(settings, "owner_timezone", "UTC")
+
+    assert cli.bootstrap_owner() == 0
+
+    user = db.query(User).filter(User.login_id == "bootstrap-owner").one()
+    assert user.display_name == "Bootstrap Owner"
+    assert security.verify_password("a-long-enough-passphrase", user.password_hash)
+
+
+def test_bootstrap_owner_does_not_modify_existing_account(monkeypatch, capsys, owner):
+    from app import cli
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "owner_login_id", "different-owner")
+    monkeypatch.setattr(settings, "owner_password", "a-different-passphrase")
+    original_hash = owner.password_hash
+
+    assert cli.bootstrap_owner() == 0
+
+    assert "bootstrap skipped" in capsys.readouterr().out
+    assert owner.password_hash == original_hash
+    assert owner.login_id == "owner"
+
+
 # --- Security primitives ---------------------------------------------------
 
 

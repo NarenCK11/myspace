@@ -31,8 +31,8 @@ EXPOSE 8000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
     CMD curl -fsS http://127.0.0.1:8000/health || exit 1
 
-# Migrations run at start-up so a deploy never serves an out-of-date schema.
-CMD ["sh", "-c", "alembic upgrade head && exec gunicorn app.main:app \
+# Migrations and first-owner bootstrap run before the API starts.
+CMD ["sh", "-c", "alembic upgrade head && python -m app.cli bootstrap-owner && exec gunicorn app.main:app \
     --worker-class uvicorn.workers.UvicornWorker \
     --workers ${WEB_CONCURRENCY:-2} \
     --bind 0.0.0.0:${PORT:-8000} \

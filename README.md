@@ -99,11 +99,11 @@ docker compose up --build
 ```
 
 The API container runs `alembic upgrade head` on start-up, so the schema is
-created automatically. Create the owner account once:
-
-```bash
-docker compose exec api python -m app.cli create-owner
-```
+created automatically. It also creates the initial owner from `OWNER_LOGIN_ID`
+and `OWNER_PASSWORD` the first time it starts with an empty database. It never
+changes an existing account's password. Set `OWNER_PASSWORD` to at least 10
+characters before starting the stack; the `docker compose up --build` command
+above will create the account on startup.
 
 Then open <http://localhost:5173> and sign in with `OWNER_LOGIN_ID` /
 `OWNER_PASSWORD`.
@@ -272,7 +272,10 @@ automatically on every start, so a deploy never serves an out-of-date schema.
 
 ## 4. Initial owner account
 
-There is no sign-up. The single account is created from the environment:
+There is no sign-up. The single account is created from the environment. The
+Docker image automatically bootstraps it on startup when the database has no
+users, which supports hosts where you cannot open a service shell. This does
+not reset or modify an existing account. For a manual setup:
 
 ```bash
 # Locally (from the backend/ directory, with the venv active)
@@ -280,10 +283,13 @@ export OWNER_LOGIN_ID=yourname
 export OWNER_PASSWORD='a-long-passphrase-you-will-remember'
 python -m app.cli create-owner
 
+# Safe to run repeatedly: creates the account only when no user exists.
+python -m app.cli bootstrap-owner
+
 # In Docker
 docker compose exec api python -m app.cli create-owner
 
-# On a deployed host, from its shell / one-off job
+# On a deployed host with a shell / one-off job
 python -m app.cli create-owner
 ```
 

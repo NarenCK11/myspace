@@ -4,6 +4,7 @@ Usage::
 
     python -m app.cli create-owner            # reads OWNER_* env vars
     python -m app.cli create-owner --force    # overwrite the existing password
+    python -m app.cli bootstrap-owner         # create the owner only if no user exists
     python -m app.cli reset-password
     python -m app.cli show-owner
 """
@@ -87,6 +88,29 @@ def create_owner(force: bool = False) -> int:
         return 0
 
 
+def bootstrap_owner() -> int:
+    """Create the initial owner when the database has no user; never modify one."""
+    with SessionLocal() as db:
+        existing = _load_owner(db)
+        if existing is not None:
+            print(f"Owner '{existing.login_id}' already exists; bootstrap skipped.")
+            return 0
+
+        login_id, password = _require_credentials()
+        user = User(
+            login_id=login_id,
+            password_hash=hash_password(password),
+            display_name=settings.owner_display_name,
+            email=settings.owner_email,
+            timezone=settings.owner_timezone,
+            password_changed_at=utcnow(),
+        )
+        db.add(user)
+        db.commit()
+        print(f"Owner account '{login_id}' created.")
+        return 0
+
+
 def reset_password() -> int:
     return create_owner(force=True)
 
@@ -112,12 +136,15 @@ def main(argv: list[str] | None = None) -> int:
     create = sub.add_parser("create-owner", help="Create the single owner account from env vars")
     create.add_argument("--force", action="store_true", help="Reset the password if it exists")
 
+    sub.add_parser("bootstrap-owner", help="Create the owner only when no user exists")
     sub.add_parser("reset-password", help="Reset the owner password from OWNER_PASSWORD")
     sub.add_parser("show-owner", help="Print the current owner account")
 
     args = parser.parse_args(argv)
     if args.command == "create-owner":
         return create_owner(force=args.force)
+    if args.command == "bootstrap-owner":
+        return bootstrap_owner()
     if args.command == "reset-password":
         return reset_password()
     return show_owner()
