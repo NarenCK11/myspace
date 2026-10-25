@@ -1,4 +1,4 @@
-import { Check, Scale, UtensilsCrossed } from "lucide-react";
+import { Flame, Scale, UtensilsCrossed } from "lucide-react";
 import { Link } from "react-router-dom";
 
 import { describeMix, QualityBar } from "@/components/meals/QualityChart";
@@ -9,14 +9,14 @@ import type { NutritionDashboard } from "@/types/api";
 
 /** Today at a glance: what has been eaten, how it rated, and whether weight is logged. */
 export function NutritionCard({ nutrition }: { nutrition: NutritionDashboard }) {
-  const { today, weight } = nutrition;
+  const { today } = nutrition;
 
   return (
     <Card>
       <CardHeader>
         <CardTitle className="flex items-center gap-2">
           <UtensilsCrossed className="size-4 text-muted-foreground" />
-          Nutrition
+          Today
         </CardTitle>
         <Button asChild variant="ghost" size="sm">
           <Link to="/meals">Open</Link>
@@ -24,52 +24,55 @@ export function NutritionCard({ nutrition }: { nutrition: NutritionDashboard }) 
       </CardHeader>
 
       <CardContent className="space-y-4">
-        {today.meals_count ? (
+        <div className="grid grid-cols-2 gap-2">
+          <div className="min-w-0 rounded-lg border border-border/70 bg-surface-raised p-3">
+            <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+              <Flame className="size-3.5" />
+              Calories today
+            </p>
+            <p className="mt-1 text-xl font-semibold tracking-tight tabular-nums">
+              {today.calories_total.toLocaleString()} <span className="text-sm font-medium">kcal</span>
+            </p>
+            <p className="text-2xs text-muted-foreground">
+              {today.calories_logged_count
+                ? `From ${today.calories_logged_count} meal${today.calories_logged_count === 1 ? "" : "s"}`
+                : "None logged"}
+            </p>
+          </div>
+
+          <div className="min-w-0 rounded-lg border border-border/70 bg-surface-raised p-3">
+            <p className="flex items-center gap-1.5 text-2xs font-medium uppercase tracking-wide text-muted-foreground">
+              <Scale className="size-3.5" />
+              Weight today
+            </p>
+            <p className="mt-1 text-xl font-semibold tracking-tight tabular-nums">
+              {today.weight_kg !== null
+                ? <>{formatKg(today.weight_kg)} <span className="text-sm font-medium">kg</span></>
+                : "—"}
+            </p>
+            <p className="text-2xs text-muted-foreground">
+              {today.weight_kg !== null ? "Logged today" : "Not logged"}
+            </p>
+          </div>
+        </div>
+
+        {today.meals_count > 0 && (
           <div className="space-y-2">
-            <p className="text-sm">
-              <span className="text-2xl font-semibold tracking-tight tabular-nums">{today.meals_count}</span>{" "}
-              <span className="text-muted-foreground">
-                {today.meals_count === 1 ? "meal" : "meals"} today
-                {today.calories_logged_count ? ` · ${today.calories_total} kcal` : ""}
-              </span>
+            <p className="text-xs text-muted-foreground">
+              {today.meals_count} meal{today.meals_count === 1 ? "" : "s"} logged
             </p>
             <QualityBar counts={today} />
             <p className="text-xs text-muted-foreground">{describeMix(today)}</p>
-            <Button asChild variant="secondary" size="sm">
-              <Link to="/meals?new=meal">Log another</Link>
-            </Button>
-          </div>
-        ) : (
-          <div className="space-y-2">
-            <p className="text-sm text-muted-foreground">Nothing eaten logged yet today.</p>
-            <Button asChild size="sm">
-              <Link to="/meals?new=meal">Log a meal</Link>
-            </Button>
           </div>
         )}
 
-        <div className="flex items-center gap-3 border-t border-border pt-3">
-          <span className="flex size-8 shrink-0 items-center justify-center rounded-lg bg-muted text-muted-foreground">
-            <Scale className="size-4" />
-          </span>
-          <div className="min-w-0 flex-1">
-            <p className="text-sm font-medium tabular-nums">
-              {weight.latest ? `${formatKg(weight.latest.weight_kg)} kg` : "No weight yet"}
-              {weight.change_since_previous !== null && (
-                <span className="ml-2 text-xs font-normal text-muted-foreground">
-                  {formatKg(weight.change_since_previous, true)} kg
-                </span>
-              )}
-            </p>
-            <p className="text-2xs text-muted-foreground">
-              {weight.logged_today ? "Logged today" : weight.latest ? `Last on ${weight.latest.logged_on}` : "Start your log"}
-            </p>
-          </div>
-          {weight.logged_today ? (
-            <Check className="size-4 shrink-0 text-viz-good" aria-label="Logged today" />
-          ) : (
+        <div className="flex flex-wrap gap-2 border-t border-border pt-3">
+          <Button asChild size="sm">
+            <Link to="/meals?new=meal">{today.meals_count ? "Log another meal" : "Log a meal"}</Link>
+          </Button>
+          {today.weight_kg === null && (
             <Button asChild variant="secondary" size="sm">
-              <Link to="/meals?new=weight">Log</Link>
+              <Link to="/meals?new=weight">Log weight</Link>
             </Button>
           )}
         </div>

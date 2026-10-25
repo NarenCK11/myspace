@@ -25,6 +25,7 @@ interface WeightChartProps {
   /** First and last day of the window, YYYY-MM-DD. Days without an entry are simply empty. */
   start: string;
   end: string;
+  targetKg?: number;
 }
 
 /**
@@ -32,7 +33,7 @@ interface WeightChartProps {
  * placed by date, so a gap in logging shows as a gap rather than being squeezed.
  * The history list under the chart is the table view for the same numbers.
  */
-export function WeightChart({ entries, start, end }: WeightChartProps) {
+export function WeightChart({ entries, start, end, targetKg }: WeightChartProps) {
   const [ref, measured] = useElementWidth<HTMLDivElement>();
   const svgRef = useRef<SVGSVGElement>(null);
   const [active, setActive] = useState<number | null>(null);
@@ -48,7 +49,9 @@ export function WeightChart({ entries, start, end }: WeightChartProps) {
 
   const weights = entries.map((entry) => entry.weight_kg);
   const padding = Math.max(0.5, (Math.max(...weights) - Math.min(...weights)) * 0.2);
-  const { lo, hi, step } = niceScale(Math.min(...weights) - padding, Math.max(...weights) + padding);
+  const low = Math.min(...weights, targetKg ?? Infinity) - padding;
+  const high = Math.max(...weights, targetKg ?? -Infinity) + padding;
+  const { lo, hi, step } = niceScale(low, high);
   const y = (kg: number) => MARGIN.top + plotH * (1 - (kg - lo) / (hi - lo));
   const ticks = Array.from({ length: Math.round((hi - lo) / step) + 1 }, (_, i) => lo + i * step);
 
@@ -103,6 +106,28 @@ export function WeightChart({ entries, start, end }: WeightChartProps) {
             </text>
           </g>
         ))}
+
+        {targetKg !== undefined && (
+          <g aria-hidden="true">
+            <line
+              x1={MARGIN.left}
+              x2={width - MARGIN.right}
+              y1={y(targetKg)}
+              y2={y(targetKg)}
+              className="stroke-warning"
+              strokeDasharray="5 4"
+              strokeWidth={1.5}
+            />
+            <text
+              x={width - MARGIN.right}
+              y={y(targetKg) - 5}
+              textAnchor="end"
+              className="fill-warning text-[11px] font-medium"
+            >
+              {formatKg(targetKg)} kg goal
+            </text>
+          </g>
+        )}
 
         {[
           { at: startDate, anchor: "start" as const, px: MARGIN.left },

@@ -16,6 +16,7 @@ import { Link } from "react-router-dom";
 import { ActivityRow } from "@/components/common/ActivityRow";
 import { NoteCard } from "@/components/common/NoteCard";
 import { NutritionCard } from "@/components/meals/NutritionCard";
+import { WeightGoalCard } from "@/components/meals/WeightGoalCard";
 import { ProgressBar, SectionTitle, StatCard } from "@/components/common/bits";
 import { ReminderRow } from "@/components/common/ReminderRow";
 import { TaskRow } from "@/components/common/TaskRow";
@@ -300,7 +301,12 @@ export function DashboardPage() {
             </CardContent>
           </Card>
 
-          {data?.nutrition && <NutritionCard nutrition={data.nutrition} />}
+          {data?.nutrition && (
+            <>
+              <NutritionCard nutrition={data.nutrition} />
+              <WeightGoalCard today={data.today} weight={data.nutrition.weight} />
+            </>
+          )}
 
           <Card>
             <CardHeader>
